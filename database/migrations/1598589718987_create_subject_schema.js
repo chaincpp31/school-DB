@@ -7,11 +7,11 @@ class CreateSubjectSchema extends Schema {
   up () {
     this.create('subjects', (table) => {
       table.integer('subject_id').unsigned().unique()
-      table.sting('title').unique()
+      table.string('title').unique()
       table.integer('teacher_id').unsigned()
 
 
-      table.foreign('teacher_id').reference('teachers')
+      table.foreign('teacher_id').references('teachers.teacher_id')
         .onDelete('CASCADE') // ON DELETE CASCADE
         .onUpdate('CASCADE') // ON UPDATE CASCADE
     })

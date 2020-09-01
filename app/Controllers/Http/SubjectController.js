@@ -1,6 +1,5 @@
 'use strict'
 const Database = use('Database')
-const Hash = use('Hash')
 
 function numberTypeParamValidator(number) {
     if (Number.isNaN(parseInt(number)))
@@ -31,30 +30,35 @@ class SubjectController {
         const students = await Database
             .select('*')
             .from('subjects')
-            .where('subject_id', id,'title','teacher_id')
+            .where('subject_id','title','teacher_id')
             .first()
 
         //0,"",null,false,undefind
-        return { status: 200, error: undefined, data: students || {} }
+        return { status: 200, error: undefined, data: subjects || {} }
     }
     async store({ request }) {
-        const { subject_id, title, email, password } = request.body
+        const { subject_id, title, teacher_id } = request.body
 
         const missingKeys = []
-        if (!first_name) missingKeys.push('first_name')
-        if (!last_name) missingKeys.push('last_name')
-        if (!email) missingKeys.push('email')
-        if (!password) missingKeys.push('password')
+        if (!subject_id) missingKeys.push('subject_id')
+        if (!title) missingKeys.push('title')
+
 
         if (missingKeys.length)
             return { status: 422, error: `${missingKeys} is missing`, data: undefined }
 
+        const subjects = await Database.table('subjects').insert({ subject_id, title, teacher_id})
+        return { status: 200, error: undefined, data: { subject_id, title, teacher_id } }
+    }
+    async showTeacher({ request }){
+        const { id } = request.params
+        const subject = await Database
+        .table('subjects')
+        .where({subject_id:id})
+        .innerJoin('teachers','subjects.teacher_id','teachers.teacher_id')
+        .first()
 
-
-        const hashedPassword = await Hash.make(password)
-
-        const students = await Database.table('students').insert({ first_name, last_name, email, password: hashedPassword })
-        return { status: 200, error: undefined, data: { first_name, last_name, email } }
+        return {status: 200, error: undefined, data: subject || {}}
     }
 }
 
