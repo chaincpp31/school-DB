@@ -7,7 +7,7 @@ class CreateEnrolmentSchema extends Schema {
   up () {
     this.create('enrollments', (table) => {
       table.increments()
-      table.float('mark').unique().default(0)
+      table.float('mark').unique()
       table.timestamp('mark_date').unique().default(this.fn.now())
       table.integer('student_id').notNullable().unsigned()
       table.integer('subject_id').notNullable().unique().unsigned()

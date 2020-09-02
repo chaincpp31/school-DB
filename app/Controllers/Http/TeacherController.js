@@ -1,6 +1,7 @@
 'use strict'
 
 const Database = use('Database')
+const Enrollment = use('App/Models/Enrollment')
 const Hash = use('Hash')
 const Validator = use('Validator')
 
@@ -13,7 +14,7 @@ function numberTypeParamValidator(number){
 }
 
 class TeacherController {
-    async index (){
+    async index (request){
         const teachers = await Database.table('teachers')
         return { status: 200, error: undefined, data: teachers}
     }
