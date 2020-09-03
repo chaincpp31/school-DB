@@ -5,10 +5,15 @@ const Model = use('Model')
 
 class Student extends Model {
     static get primaryKey() {
-        return 'student_id'
+        return "student_id";
     }
-    subjects() {
-        return this.hasMany('App/Models/Student')
+
+    group() {
+        return this.belongsTo("App/Models/Group");
+    }
+
+    enrollments() {
+        return this.hasMany("App/Models/Enrollment");
     }
 }
 

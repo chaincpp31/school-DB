@@ -4,14 +4,16 @@
 const Model = use('Model')
 
 class Enrollment extends Model {
-    static get createdAtColumn() {
-        return null;
+    static get primaryKey() {
+        return "enrollment_id";
     }
-    static get updatedAtColumn() {
-        return null;
+
+    student() {
+        return this.belongsTo("App/Models/Student");
     }
-    teacher() {
-        return this.belongsTo('App/Models/Enrollment')
+
+    subject() {
+        return this.belongsTo("App/Models/Subject");
     }
 }
 

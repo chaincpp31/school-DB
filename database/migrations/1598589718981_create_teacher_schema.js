@@ -7,12 +7,12 @@ class CreateTeacherSchema extends Schema {
   up () {
     this.create('teachers', (table) => {
       table.increments()
-      table.integer('teacher_id').unsigned().unique()
-      table.string('first_name',120).notNullable()
-      table.string('last_name',120).notNullable()
-      table.string('email',255).notNullable()
-      table.string('password').notNullable()
-      table.timestamps()
+      table.increments("teacher_id");
+      table.string("first_name", 120).notNullable();
+      table.string("last_name", 120).notNullable();
+      table.string("password").notNullable();
+      table.string("email").notNullable().unique();
+      table.timestamps();
 
     })
   }

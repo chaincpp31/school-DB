@@ -2,114 +2,216 @@
 
 const Database = use("Database");
 const Validator = use("Validator");
+const Enrollment = use("App/Models/Enrollment");
 
 function numberTypeParamValidator(number) {
-  if (Number.isNaN(parseInt(number))) {
-    return {
-      error: `param: '${number}' is not supported, please use param as a number.`,
-    };
-  }
+    if (Number.isNaN(parseInt(number))) {
+        return {
+            error: `param: '${number}' is not supported, please use param as a number.`,
+        };
+    }
 
-  return {};
+    return {};
 }
 
 class EnrollmentController {
-  async index() {
-    const data = await Database.table("enrollments");
+    async index({ request }) {
+        const { references } = request.qs;
 
-    return data;
-  }
+        const enrollments = Enrollment.query();
 
-  async show({ request }) {
-    const { id } = request.params;
+        if (references) {
+            const extractedReferences = references.split(",");
 
-    const validatedValue = numberTypeParamValidator(id);
+            extractedReferences.forEach((value) => {
+                enrollments.with(value);
+            });
+        }
 
-    if (validatedValue.error)
-      return { status: 500, error: validatedValue.error, data: undefined };
+        return { status: 200, error: undefined, data: await enrollments.fetch() };
+    }
 
-    const enrollment = await Database.select("*")
-      .from("enrollments")
-      .where({enrollment_id: id})
-      .first();
+    async show({ request }) {
+        const { id } = request.params;
 
-    return { status: 200, error: undefined, data: enrollment || {} };
-  }
+        const validatedValue = numberTypeParamValidator(id);
 
-  async store({ request }) {
-    const { mark } = request.body;
-    // const { mark, student_id, subject_id } = request.body;
+        if (validatedValue.error)
+            return { status: 500, error: validatedValue.error, data: undefined };
 
-    const rules = {
-      mark: "required",
-    };
+        const enrollment = await Enrollment.find(id);
 
-    const validation = await Validator.validateAll(request.body, rules);
+        return { status: 200, error: undefined, data: enrollment || {} };
+    }
 
-    if (validation.fails())
-      return { status: 422, error: validation.messages(), data: undefined };
+    async store({ request }) {
+        const { mark, student_id, subject_id } = request.body;
 
-    //     const missingKeys = [];
+        const rules = {
+            mark: "required",
+            student_id: "required",
+            subject_id: "required",
+        };
 
-    //     if (!mark) missingKeys.push("mark");
-    // if (!student_id) missingKeys.push("student_id");
-    // if (!subject_id) missingKeys.push("subject_id");
+        const validation = await Validator.validateAll(request.body, rules);
 
-    //     if (missingKeys.length)
-    //       return {
-    //         status: 422,
-    //         error: `${missingKeys} is missing.`,
-    //         data: undefined,
-    //       };
+        if (validation.fails())
+            return { status: 422, error: validation.messages(), data: undefined };
 
-    await Database.table("enrollments").insert({
-      mark,
-      created_at: new Date(),
-      updated_at: new Date(),
-      // student_id,
-      // subject_id,
-    });
+        const enrollment = new Enrollment();
+        enrollment.mark = mark;
+        enrollment.student_id = student_id;
+        enrollment.subject_id = subject_id;
 
-    return {
-      status: 200,
-      error: undefined,
-      // data: { mark, student_id, subject_id },
-      data: { mark },
-    };
-  }
+        await enrollment.save();
 
-  async update({ request }) {
-    const { body, params } = request;
+        return {
+            status: 200,
+            error: undefined,
+            data: enrollment,
+        };
+    }
 
-    const { id } = params;
+    async update({ request }) {
+        const { body, params } = request;
 
-    const { mark } = body;
+        const { id } = params;
 
-    const enrollmentID = await Database.table("enrollments")
-      .where({ enrollment_id: id })
-      .update({
-        mark,
-        updated_at: new Date(),
-      });
+        const { mark } = body;
 
-    const enrollment = await Database.table("enrollments")
-      .where({ enrollment_id: enrollmentID })
-      .first();
+        const enrollment = await Enrollment.find(id);
 
-    return {
-      status: 200,
-      error: undefined,
-      data: enrollment,
-    };
-  }
+        enrollment.merge({ mark });
 
-  async destroy({ request }) {
-    const { id } = request.params;
+        await enrollment.save();
 
-    await Database.table("enrollments").where({ enrollment_id: id }).delete();
+        return {
+            status: 200,
+            error: undefined,
+            data: enrollment,
+        };
+    }
 
-    return { status: 200, error: undefined, data: { message: "success" } };
-  }
+    async destroy({ request }) {
+        const { id } = request.params;
+
+        await Database.table("enrollments").where({ enrollment_id: id }).delete();
+
+        return { status: 200, error: undefined, data: { message: "success" } };
+    }
 }
+
+
+// const Database = use("Database");
+// const Validator = use("Validator");
+
+// function numberTypeParamValidator(number) {
+//   if (Number.isNaN(parseInt(number))) {
+//     return {
+//       error: `param: '${number}' is not supported, please use param as a number.`,
+//     };
+//   }
+
+//   return {};
+// }
+
+// class EnrollmentController {
+//   async index() {
+//     const data = await Database.table("enrollments");
+
+//     return data;
+//   }
+
+//   async show({ request }) {
+//     const { id } = request.params;
+
+//     const validatedValue = numberTypeParamValidator(id);
+
+//     if (validatedValue.error)
+//       return { status: 500, error: validatedValue.error, data: undefined };
+
+//     const enrollment = await Database.select("*")
+//       .from("enrollments")
+//       .where({enrollment_id: id})
+//       .first();
+
+//     return { status: 200, error: undefined, data: enrollment || {} };
+//   }
+
+//   async store({ request }) {
+//     const { mark } = request.body;
+//     // const { mark, student_id, subject_id } = request.body;
+
+//     const rules = {
+//       mark: "required",
+//     };
+
+//     const validation = await Validator.validateAll(request.body, rules);
+
+//     if (validation.fails())
+//       return { status: 422, error: validation.messages(), data: undefined };
+
+//     //     const missingKeys = [];
+
+//     //     if (!mark) missingKeys.push("mark");
+//     // if (!student_id) missingKeys.push("student_id");
+//     // if (!subject_id) missingKeys.push("subject_id");
+
+//     //     if (missingKeys.length)
+//     //       return {
+//     //         status: 422,
+//     //         error: `${missingKeys} is missing.`,
+//     //         data: undefined,
+//     //       };
+
+//     await Database.table("enrollments").insert({
+//       mark,
+//       created_at: new Date(),
+//       updated_at: new Date(),
+//       // student_id,
+//       // subject_id,
+//     });
+
+//     return {
+//       status: 200,
+//       error: undefined,
+//       // data: { mark, student_id, subject_id },
+//       data: { mark },
+//     };
+//   }
+
+//   async update({ request }) {
+//     const { body, params } = request;
+
+//     const { id } = params;
+
+//     const { mark } = body;
+
+//     const enrollmentID = await Database.table("enrollments")
+//       .where({ enrollment_id: id })
+//       .update({
+//         mark,
+//         updated_at: new Date(),
+//       });
+
+//     const enrollment = await Database.table("enrollments")
+//       .where({ enrollment_id: enrollmentID })
+//       .first();
+
+//     return {
+//       status: 200,
+//       error: undefined,
+//       data: enrollment,
+//     };
+//   }
+
+//   async destroy({ request }) {
+//     const { id } = request.params;
+
+//     await Database.table("enrollments").where({ enrollment_id: id }).delete();
+
+//     return { status: 200, error: undefined, data: { message: "success" } };
+//   }
+// }
 
 module.exports = EnrollmentController;
