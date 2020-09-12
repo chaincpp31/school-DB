@@ -1,5 +1,7 @@
 'use strict'
 
+const SubjectUtil = require("../../../Util/subjectUtil");
+
 
 const Database = use("Database");
 const Validator = use("Validator");
@@ -19,25 +21,31 @@ class SubjectController {
     async index({ request }) {
         const { references = undefined } = request.qs;
 
-        const subjects = Subject.query();
+        const subjectUtil = new SubjectUtil()
+        const subjects = await subjectUtil.getAll(references)
 
-        if (references) {
-            const extractedReferences = references.split(",");
-            subjects.with(extractedReferences);
-        }
+        // const subjects = Subject.query();
+
+        // if (references) {
+        //     const extractedReferences = references.split(",");
+        //     subjects.with(extractedReferences);
+        // }
 
         return { status: 200, error: undefined, data: await subjects.fetch() };
     }
 
     async show({ request }) {
         const { id } = request.params;
+        const {references}=request.qs
+        const subjectUtil = new SubjectUtil(Subject)
+        const subject = subjectUtil.getById(id,references)
 
         const validatedValue = numberTypeParamValidator(id);
 
-        if (validatedValue.error)
-            return { status: 500, error: validatedValue.error, data: undefined };
+        // if (validatedValue.error)
+        //     return { status: 500, error: validatedValue.error, data: undefined };
 
-        const subject = await Subject.find(id);
+        // const subject = await Subject.find(id);
 
         return { status: 200, error: undefined, data: subject || {} };
     }

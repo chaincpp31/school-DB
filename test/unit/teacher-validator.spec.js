@@ -18,10 +18,10 @@ test('should return',async({assert})=>{
   assert.isArray(validatedData.error)
 })
 
-test('should return',async({assert})=>{
-  const validatedData = await teacherValidator("John","Dou","wrong email","12345")
-  assert.
-})
+// test('should return',async({assert})=>{
+//   const validatedData = await teacherValidator("John","Dou","wrong email","12345")
+//   assert.
+// })
 
 
 test('should return more than one error if multiple incorect data is pass', async ({assert})=>{

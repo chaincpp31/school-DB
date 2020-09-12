@@ -16,6 +16,14 @@ class Subject extends Model {
     teacher(){
         return this.belongsTo('App/Models/Teacher')
     }
+    students(){
+        return this
+        .belongsToMany('App/Models/Students')
+        .pivotModel('App/Models/Enrollment')
+    }
+    enrollments(){
+        return this.hasMany('App/Models/Enrollment')
+    }
 }
 
 module.exports = Subject

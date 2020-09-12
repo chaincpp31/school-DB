@@ -1,6 +1,7 @@
 const Validator = use("Validator")
 
-module.exports = async function teacherValidator ({first_name,last_name,email,password}){
+module.exports = async function teacherValidator ({data}){
+    if (typeof data !== 'object') throw new Error()
 const rules = {
     first_name: "required",
     last_name: "required",
